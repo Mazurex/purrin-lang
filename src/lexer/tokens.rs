@@ -2,6 +2,7 @@
 #[allow(dead_code)]
 pub enum TokenType {
     IntLiteral,
+    FloatLiteral,
     
     Plus,
     Minus,
@@ -9,6 +10,10 @@ pub enum TokenType {
     TimesTimes, // Implement
     Slash,
     Percent,
+
+    LParen,
+    RParen,
+    Semi,
 
     Equals,
     EqualsEquals,
@@ -42,6 +47,9 @@ impl TryFrom<char> for TokenType {
             '!' => Ok(TokenType::Not),
             '>' => Ok(TokenType::MoreThan),
             '<' => Ok(TokenType::LessThan),
+            '(' => Ok(TokenType::LParen),
+            ')' => Ok(TokenType::RParen),
+            ';' => Ok(TokenType::Semi),
             _ => Err(())
         }
     }

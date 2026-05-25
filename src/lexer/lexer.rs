@@ -38,7 +38,13 @@ impl Lexer {
         self.src[self.position+1] as char
     }
 
+    fn is_eof(&self) -> bool {
+        self.position >= self.src.len()
+    }
+
     fn advance(&mut self) -> char {
+        if self.is_eof() { return '\0'; }
+
         let c = self.src[self.position] as char;
         self.position += 1;
         c
@@ -57,15 +63,26 @@ impl Lexer {
                 self.col += 1;
             }
 
+            if c == '/' && self.peek_next() == '/' {
+                while self.peek_next() != '\n' && self.peek_next() != '\0' {
+                    self.advance();
+                }
+
+                self.advance();
+
+                continue
+            }
+
             // Skip whitespace
             if c.is_whitespace() {
                 self.advance();
                 continue;
             }
 
-            // Integer Literals
+            // Numeric Literals
             if c.is_numeric() {
                 let mut value = String::new();
+                let mut is_float = false;
 
                 while self.peek().is_numeric() {
                     let n = self.peek_next();
@@ -74,11 +91,27 @@ impl Lexer {
                             process::exit(1);
                     }
 
+                    if n == '.' {
+                        if is_float {
+                            println!("Unknown integer literal '{}' at ({}:{})", value, self.line, self.col);
+                            process::exit(1);
+                        }
+
+                        is_float = true;
+
+                        value.push(self.advance());
+
+                        if !self.peek_next().is_numeric() {
+                            println!("Unknown integer literal '{}' at ({}:{})", value, self.line, self.col);
+                            process::exit(1);
+                        }
+                    }
+
                     value.push(self.advance());
                 }
 
                 tokens.push(Token {
-                    t: TokenType::IntLiteral,
+                    t: if is_float {TokenType::FloatLiteral} else { TokenType::IntLiteral },
                     value: Some(Vec::from(value))
                 });
 
