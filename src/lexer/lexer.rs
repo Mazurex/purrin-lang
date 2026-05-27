@@ -2,9 +2,7 @@
 
 use crate::error::{LexerError, LexerErrorKind};
 use crate::lexer::cursor::Cursor;
-use crate::lexer::tokens::{Token, TokenType};
-
-const KEYWORDS: [&str; 1] = ["return"];
+use crate::lexer::tokens::{KEYWORDS, SYMBOLS, Token, TokenType};
 
 pub struct Lexer {
     pub file_name: String,
@@ -15,13 +13,15 @@ impl Lexer {
     pub fn new(src: String, file_name: String) -> Lexer {
         Self {
             file_name,
-            cursor: Cursor::init(src),
+            cursor: Cursor::new(src),
         }
     }
 
     pub fn try_comment(&mut self) -> bool {
-        if self.cursor.peek() == Some('/') && self.cursor.peek_next() == Some('/') {
-            while self.cursor.peek() != Some('\n') && self.cursor.peek() != Some('\0') {
+        if self.cursor.peek_by(2) == Some(String::from("//")) {
+            while let Some(c) = self.cursor.peek() {
+                if c == '\n' || c == '\0' {break}
+
                 self.cursor.advance();
             }
 
@@ -99,15 +99,46 @@ impl Lexer {
         )))
     }
 
-    pub fn push_single(&mut self, tokens: &mut Vec<Token>, t: TokenType) {
-        tokens.push(Token { t, v: None });
-        self.cursor.advance();
+    pub fn try_identifier(&mut self) -> Option<Token> {
+        let Some(c) = self.cursor.peek() else {
+            return None;
+        };
+
+        if !c.is_alphabetic() {
+            return None;
+        }
+
+        let mut value = String::new();
+
+        while let Some(c) = self.cursor.peek() {
+            if c.is_alphanumeric() {
+                value.push(c);
+                self.cursor.advance();
+                continue;
+            }
+
+            break;
+        }
+
+        let keyword_token = KEYWORDS
+            .iter()
+            .find(|(kw, _)| *kw == value)
+            .map(|(_, token)| token);
+        let token_type = keyword_token.copied().unwrap_or(TokenType::Identifier);
+
+        Some(Token::new(token_type))
     }
 
-    pub fn push_double(&mut self, tokens: &mut Vec<Token>, t: TokenType) {
-        tokens.push(Token { t, v: None });
-        self.cursor.advance();
-        self.cursor.advance();
+    pub fn try_symbol(&mut self) -> Option<Token> {
+        for (symbol, token_type) in SYMBOLS {
+            if self.cursor.peek_by(symbol.len()).as_deref() == Some(symbol) {
+                self.cursor.advance_by(symbol.len());
+
+                return Some(Token::new(*token_type));
+            }
+        }
+
+        None
     }
 
     pub fn tokenize(&mut self) -> Result<Vec<Token>, LexerError> {
@@ -126,82 +157,30 @@ impl Lexer {
                 continue;
             }
 
-            // Skip whitespace
             if c.is_whitespace() {
                 self.cursor.advance();
                 continue;
             }
 
-            // Numeric Literals
             if let Some(token) = self.try_number()? {
                 tokens.push(token);
                 continue;
             }
 
-            // Keywords and Identifiers
-            if c.is_alphabetic() {
-                let mut value = String::new();
-
-                while self.cursor.peek().is_some_and(char::is_alphanumeric) {
-                    value.push(self.cursor.advance().expect(""));
-                }
-
-                tokens.push(Token {
-                    t: if KEYWORDS.contains(&value.as_str()) {
-                        TokenType::Keyword
-                    } else {
-                        TokenType::Identifier
-                    },
-                    v: Some(value),
-                });
-
+            if let Some(token) = self.try_identifier() {
+                tokens.push(token);
                 continue;
             }
 
-            let (symbol_token, advance_by) = match (c, self.cursor.peek_next().unwrap_or(' ')) {
-                ('*', '*') => (Some(TokenType::TimesTimes), 2),
-
-                ('=', '=') => (Some(TokenType::EqualsEquals), 2),
-                ('!', '=') => (Some(TokenType::NotEquals), 2),
-                ('<', '=') => (Some(TokenType::LessEqualThan), 2),
-                ('>', '=') => (Some(TokenType::MoreEqualThan), 2),
-                ('|', '|') => (Some(TokenType::Or), 2),
-                ('&', '&') => (Some(TokenType::And), 2),
-
-                ('+', _) => (Some(TokenType::Plus), 1),
-                ('-', _) => (Some(TokenType::Minus), 1),
-                ('*', _) => (Some(TokenType::Times), 1),
-                ('/', _) => (Some(TokenType::Slash), 1),
-                ('%', _) => (Some(TokenType::Percent), 1),
-
-                ('=', _) => (Some(TokenType::Equals), 1),
-                (';', _) => (Some(TokenType::Semi), 1),
-                ('(', _) => (Some(TokenType::LParen), 1),
-                (')', _) => (Some(TokenType::RParen), 1),
-
-                ('!', _) => (Some(TokenType::Not), 1),
-                ('>', _) => (Some(TokenType::MoreThan), 1),
-                ('<', _) => (Some(TokenType::LessThan), 1),
-                _ => (None, 0),
-            };
-
-            if symbol_token.is_some() {
-                tokens.push(Token {
-                    t: symbol_token.expect(""), // Since we literally check if its Some right above, this expect is just rust being rust
-                    v: None,
-                });
-
-                for _ in 0..advance_by {
-                    self.cursor.advance();
-                }
-
+            if let Some(token) = self.try_symbol() {
+                tokens.push(token);
                 continue;
             }
 
             return Err(LexerError::init(
                 self,
                 LexerErrorKind::UnexpectedCharacter,
-                String::from("Unknown symbol"),
+                format!("Unknown symbol '{c}'"),
             ));
         }
 
