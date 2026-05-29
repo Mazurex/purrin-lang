@@ -5,7 +5,7 @@
 #[allow(dead_code)]
 #[derive(Copy, Clone)]
 pub enum TokenType {
-    NumberLit,
+    IntegerLit,
     FloatLit,
     BoolLit,
     StringLit,
@@ -47,7 +47,7 @@ pub enum TokenType {
     If,
     Else,
 
-    Number,
+    Integer,
     String,
     Bool,
     Float,
@@ -88,7 +88,7 @@ pub const KEYWORDS: &[(&str, TokenType)] = &[
     ("if", TokenType::If),
     ("else", TokenType::Else),
 
-    ("num", TokenType::Number),
+    ("int", TokenType::Integer),
     ("float", TokenType::Float),
     ("str", TokenType::String),
     ("char", TokenType::Char),

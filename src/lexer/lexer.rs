@@ -128,7 +128,7 @@ impl Lexer {
                 return Err(LexerError::new(
                     self,
                     LexerErrorKind::InvalidNumber,
-                    String::from("Invalid number literal"),
+                    String::from("Invalid integer literal"),
                     Some(format!("Omit invalid characters -> {}", &value[..last_valid_num_pos])),
                 ));
             }
@@ -140,7 +140,7 @@ impl Lexer {
             if is_float {
                 TokenType::FloatLit
             } else {
-                TokenType::NumberLit
+                TokenType::IntegerLit
             },
             value,
         )))
