@@ -1,3 +1,6 @@
+// Copyright 2026 Maz
+// Licensed under the Apache License, Version 2.0
+
 pub struct Cursor {
     pub src: String,
     pub chars: Vec<char>,
