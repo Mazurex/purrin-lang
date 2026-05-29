@@ -15,7 +15,6 @@ pub enum LexerErrorKind {
     UnterminatedMultilineComment
 }
 
-// TODO: Change "note:" to "suggested fix:" (but also make it optional)
 pub struct LexerError {
     pub kind: LexerErrorKind,
     pub file_name: String,
