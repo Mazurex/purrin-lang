@@ -3,6 +3,7 @@
 
 pub mod error;
 mod lexer;
+pub mod span;
 
 use crate::lexer::lexer::Lexer;
 use std::{env, fs, process};
