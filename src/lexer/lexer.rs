@@ -81,6 +81,11 @@ impl Lexer {
                 continue;
             }
 
+            if c == '_' {
+                self.cursor.advance();
+                continue;
+            }
+
             if c == '.' {
                 if is_float {
                     return Err(LexerError::new(
