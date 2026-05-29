@@ -58,6 +58,7 @@ pub enum TokenType {
 }
 
 #[derive(Debug)]
+#[derive(Clone)]
 pub struct Token {
     pub(crate) t: TokenType,
     pub(crate) v: Option<String>,

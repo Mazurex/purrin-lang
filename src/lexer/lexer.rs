@@ -3,20 +3,20 @@
 
 #![allow(dead_code)]
 
-use crate::error::{LexerError, LexerErrorKind};
-use crate::lexer::cursor::Cursor;
+use crate::error::lexer_error::{LexerError, LexerErrorKind};
+use crate::cursor::LexerCursor;
 use crate::lexer::tokens::{ESCAPE_CHARS, KEYWORDS, SYMBOLS, Token, TokenType};
 
 pub struct Lexer {
     pub file_name: String,
-    pub cursor: Cursor,
+    pub cursor: LexerCursor,
 }
 
 impl Lexer {
     pub fn new(src: String, file_name: String) -> Lexer {
         Self {
             file_name,
-            cursor: Cursor::new(src),
+            cursor: LexerCursor::new(src),
         }
     }
 

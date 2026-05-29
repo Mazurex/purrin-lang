@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0
 
 pub mod error;
-mod lexer;
+pub mod lexer;
 pub mod span;
+pub mod parser;
+pub mod cursor;
 
 use crate::lexer::lexer::Lexer;
 use std::{env, fs, process};
