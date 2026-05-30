@@ -176,7 +176,7 @@ impl Lexer {
             return None;
         };
 
-        if !c.is_alphabetic() {
+        if !c.is_alphabetic() && c != '_' {
             return None;
         }
 
