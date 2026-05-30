@@ -37,7 +37,6 @@ impl LexerError {
         }
     }
 
-    /// TODO: Support span rather than just start pos
     pub fn display(&self) {
         println!("Error[{:?}]: {}", self.kind, self.message);
         println!(" --> {}:{}:{}", self.file_name, self.span.start.line, self.span.start.col);
