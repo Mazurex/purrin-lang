@@ -7,7 +7,6 @@ use crate::cursor::LexerCursor;
 use crate::error::lexer_error::{LexerError, LexerErrorKind};
 use crate::lexer::tokens::{ESCAPE_CHARS, KEYWORDS, SYMBOLS, Token, TokenType};
 use crate::span::{Position, Span};
-use std::io::Cursor;
 
 pub struct Lexer {
     pub file_name: String,
