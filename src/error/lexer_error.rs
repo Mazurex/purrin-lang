@@ -49,12 +49,14 @@ impl LexerError {
         println!("{} | {}", line_str, self.source_line);
 
         let padding = self.span.start.col;
+        let span_width = self.span.end.col.saturating_sub(self.span.start.col).max(1);
+
         println!(
-            "{:>width$} | {:>padding$}\x1b[31m^\x1b[0m",
+            "{:>width$} | {}{}",
             "",
-            "",
-            width = line_str.len(),
-            padding = padding
+            " ".repeat(padding),
+            format!("\x1b[31m{}\x1b[0m", "^".repeat(span_width)),
+            width = line_str.len()
         );
 
         if let Some(s) = &self.suggested_fix {

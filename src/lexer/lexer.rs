@@ -96,7 +96,13 @@ impl Lexer {
                 if is_float {
                     return Err(LexerError::new(
                         self,
-                        Span::new(starting_pos, Position::from_cursor(&self.cursor)),
+                        Span::new(
+                            Position::from_cursor(&self.cursor),
+                            Position::new(
+                                self.cursor.position.line,
+                                self.cursor.get_line(self.cursor.position.line).len(),
+                            ),
+                        ),
                         LexerErrorKind::InvalidFloat,
                         String::from("Invalid float literal"),
                         Some(format!(
@@ -135,7 +141,13 @@ impl Lexer {
             if c.is_alphabetic() {
                 return Err(LexerError::new(
                     self,
-                    Span::single(Position::from_cursor(&self.cursor)),
+                    Span::new(
+                        Position::from_cursor(&self.cursor),
+                        Position::new(
+                            self.cursor.position.line,
+                            self.cursor.get_line(self.cursor.position.line).len(),
+                        ),
+                    ),
                     LexerErrorKind::InvalidNumber,
                     String::from("Invalid integer literal"),
                     Some(format!(
