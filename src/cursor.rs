@@ -85,15 +85,6 @@ impl LexerCursor {
         Some(result)
     }
 
-    // TODO: remove unused functions
-    pub fn consume(&mut self, expected: char) -> Option<char> {
-        if self.peek()? != expected {
-            None
-        } else {
-            self.advance()
-        }
-    }
-
     pub fn get_line(&self, target_line: usize) -> String {
         self.src
             .lines()
