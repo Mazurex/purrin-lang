@@ -29,7 +29,7 @@ fn main() {
     let tokens = match lexer.tokenize() {
         Ok(tokens) => tokens,
         Err(e) => {
-            e.display();
+            println!("{}", e.format());
             process::exit(1);
         }
     };
