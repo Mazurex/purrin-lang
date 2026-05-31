@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0
 
 use crate::file::SourceFile;
-use crate::span::{Position, Span};
+use crate::span::{Span};
 
 #[derive(Debug)]
 pub enum LexerErrorKind {
