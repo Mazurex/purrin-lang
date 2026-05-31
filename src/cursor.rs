@@ -4,18 +4,14 @@
 use crate::span::Position;
 
 pub struct LexerCursor {
-    pub src: String,
     pub chars: Vec<char>,
     pub char_position: usize,
     pub position: Position,
 }
 
 impl LexerCursor {
-    pub fn new(src: String) -> Self {
-        let chars = src.chars().collect();
-
+    pub fn new(chars: Vec<char>) -> Self {
         Self {
-            src,
             chars,
             char_position: 0,
             position: Position::new(1, 0),
@@ -82,13 +78,5 @@ impl LexerCursor {
         }
 
         Some(result)
-    }
-
-    pub fn get_line(&self, target_line: usize) -> String {
-        self.src
-            .lines()
-            .nth(target_line - 1)
-            .unwrap_or("")
-            .to_string()
     }
 }

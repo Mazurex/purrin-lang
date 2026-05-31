@@ -5,19 +5,22 @@
 
 use crate::cursor::LexerCursor;
 use crate::error::lexer_error::{LexerError, LexerErrorKind};
+use crate::file::SourceFile;
 use crate::lexer::tokens::{ESCAPE_CHARS, KEYWORDS, SYMBOLS, Token, TokenType};
 use crate::span::{Position, Span};
 
 pub struct Lexer {
-    pub file_name: String,
+    pub source_file: SourceFile,
     pub cursor: LexerCursor,
 }
 
 impl Lexer {
-    pub fn new(src: String, file_name: String) -> Lexer {
+    pub fn new(source_file: SourceFile) -> Lexer {
+        let chars = source_file.source.chars().collect();
+
         Self {
-            file_name,
-            cursor: LexerCursor::new(src),
+            source_file,
+            cursor: LexerCursor::new(chars),
         }
     }
 
@@ -48,7 +51,7 @@ impl Lexer {
 
             if is_multiline && !is_terminated {
                 return Err(LexerError::new(
-                    self,
+                    self.source_file.clone(),
                     Span::new(starting_pos, Position::from_cursor(&self.cursor)),
                     LexerErrorKind::UnterminatedMultilineComment,
                     String::from("Multiline comment missing a '///' terminator"),
@@ -94,12 +97,12 @@ impl Lexer {
             if c == '.' {
                 if is_float {
                     return Err(LexerError::new(
-                        self,
+                        self.source_file.clone(),
                         Span::new(
                             Position::from_cursor(&self.cursor),
                             Position::new(
                                 self.cursor.position.line,
-                                self.cursor.get_line(self.cursor.position.line).len(),
+                                self.source_file.get_line(self.cursor.position.line).len(),
                             ),
                         ),
                         LexerErrorKind::InvalidFloat,
@@ -122,7 +125,7 @@ impl Lexer {
                     Some(next) if next.is_ascii_digit() => {}
                     _ => {
                         return Err(LexerError::new(
-                            self,
+                            self.source_file.clone(),
                             Span::single(dot_pos),
                             LexerErrorKind::InvalidNumber,
                             String::from("Expected digit after '.'"),
@@ -139,12 +142,12 @@ impl Lexer {
 
             if c.is_alphabetic() {
                 return Err(LexerError::new(
-                    self,
+                    self.source_file.clone(),
                     Span::new(
                         Position::from_cursor(&self.cursor),
                         Position::new(
                             self.cursor.position.line,
-                            self.cursor.get_line(self.cursor.position.line).len(),
+                            self.source_file.get_line(self.cursor.position.line).len(),
                         ),
                     ),
                     LexerErrorKind::InvalidNumber,
@@ -267,7 +270,7 @@ impl Lexer {
 
         if !is_terminated {
             return Err(LexerError::new(
-                self,
+                self.source_file.clone(),
                 Span::single(Position::from_cursor(&self.cursor)),
                 LexerErrorKind::UnterminatedString,
                 format!("String literal missing {} terminator", term),
@@ -315,7 +318,7 @@ impl Lexer {
 
         if !is_terminated {
             return Err(LexerError::new(
-                self,
+                self.source_file.clone(),
                 Span::single(Position::from_cursor(&self.cursor)),
                 LexerErrorKind::UnterminatedChar,
                 String::from("Unterminated char literal"),
@@ -331,7 +334,7 @@ impl Lexer {
 
         if value.len() != 1 && !is_escape {
             return Err(LexerError::new(
-                self,
+                self.source_file.clone(),
                 Span::new(starting_pos, Position::from_cursor(&self.cursor)),
                 LexerErrorKind::InvalidChar,
                 String::from("Char literal is not a valid char"),
@@ -388,7 +391,7 @@ impl Lexer {
             }
 
             return Err(LexerError::new(
-                self,
+                self.source_file.clone(),
                 Span::single(Position::from_cursor(&self.cursor)),
                 LexerErrorKind::UnexpectedCharacter,
                 format!("Unknown symbol '{c}'"),
